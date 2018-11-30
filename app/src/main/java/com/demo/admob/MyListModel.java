@@ -4,7 +4,7 @@ package com.demo.admob;
  * Created by vbusani on 3/1/16.
  */
 public class MyListModel {
-    int viewType;
+    int viewType = 1;
     String name;
 
     public MyListModel() {

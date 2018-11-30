@@ -2,6 +2,7 @@ package com.demo.admob;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,12 +12,14 @@ import android.widget.TextView;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.formats.MediaView;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.ads.formats.NativeContentAd;
 import com.google.android.gms.ads.formats.NativeContentAdView;
+import com.google.android.gms.ads.formats.UnifiedNativeAd;
+import com.google.android.gms.ads.formats.UnifiedNativeAdView;
 
 import java.util.List;
-
 
 /**
  * Created by vbusani on 3/1/16.
@@ -37,19 +40,18 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerView.ViewH
     public static class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView name;
 
-        public MyViewHolder(View view) {
+        MyViewHolder(View view) {
             super(view);
             name = (TextView) view.findViewById(R.id.listView_name);
         }
     }
 
     public class ViewHolderAdMob extends RecyclerView.ViewHolder {
+        UnifiedNativeAdView adView;
 
-        NativeContentAdView adView;
-
-        public ViewHolderAdMob(View view) {
+        ViewHolderAdMob(View view) {
             super(view);
-              adView = view.findViewById(R.id.native_ad_id);
+            adView = view.findViewById(R.id.native_ad_id);
         }
     }
 
@@ -57,6 +59,7 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerView.ViewH
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         RecyclerView.ViewHolder viewHolder = null;
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+        Log.d("zhaoyujie", "  viewType = " + viewType);
         switch (viewType) {
             case 1: {
                 View v = inflater.inflate(R.layout.list_item_1, parent, false);
@@ -65,50 +68,11 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerView.ViewH
             }
             case 2: {
                 View v = inflater.inflate(R.layout.list_item_admob, parent, false);
-
-
                 viewHolder = new ViewHolderAdMob(v);
                 break;
             }
         }
         return viewHolder;
-    }
-
-    private void populateContentAdView(NativeContentAd nativeContentAd,
-                                       NativeContentAdView adView) {
-        // mVideoStatus.setText("Video status: Ad does not contain a video asset.");
-
-         adView.setHeadlineView(adView.findViewById(R.id.contentad_headline));
-        adView.setImageView(adView.findViewById(R.id.contentad_image));
-          adView.setBodyView(adView.findViewById(R.id.contentad_body));
-        adView.setCallToActionView(adView.findViewById(R.id.contentad_call_to_action));
-        adView.setLogoView(adView.findViewById(R.id.contentad_logo));
-        adView.setAdvertiserView(adView.findViewById(R.id.contentad_advertiser));
-
-        // Some assets are guaranteed to be in every NativeContentAd.
-         ((TextView) adView.getHeadlineView()).setText(nativeContentAd.getHeadline());
-        ((TextView) adView.getBodyView()).setText(nativeContentAd.getBody());
-         ((TextView) adView.getCallToActionView()).setText(nativeContentAd.getCallToAction());
-         ((TextView) adView.getAdvertiserView()).setText(nativeContentAd.getAdvertiser());
-
-        List<NativeAd.Image> images = nativeContentAd.getImages();
-
-        if (images.size() > 0) {
-            ((ImageView) adView.getImageView()).setImageDrawable(images.get(0).getDrawable());
-        }
-
-        // Some aren't guaranteed, however, and should be checked.
-        NativeAd.Image logoImage = nativeContentAd.getLogo();
-
-        if (logoImage == null) {
-            adView.getLogoView().setVisibility(View.INVISIBLE);
-        } else {
-            ((ImageView) adView.getLogoView()).setImageDrawable(logoImage.getDrawable());
-            adView.getLogoView().setVisibility(View.VISIBLE);
-        }
-
-        // Assign native ad object to the native view.
-        adView.setNativeAd(nativeContentAd);
     }
 
     @Override
@@ -123,28 +87,64 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerView.ViewH
                 break;
 
             case 2:
-               final ViewHolderAdMob viewHolderAdMob = (ViewHolderAdMob) holder;
-
-                AdLoader.Builder builder = new AdLoader.Builder(mContext, ADMOB_AD_UNIT_ID);
-                builder.forContentAd(new NativeContentAd.OnContentAdLoadedListener() {
-                    @Override
-                    public void onContentAdLoaded(NativeContentAd ad) {
-                        populateContentAdView(ad, viewHolderAdMob.adView);
-                    }
-                });
-
-                AdLoader adLoader = builder.withAdListener(new AdListener() {
-                    @Override
-                    public void onAdFailedToLoad(int errorCode) {
-                        System.out.println("### Failed to load ad ###");
-                    }
-                }).build();
-
-                adLoader.loadAd(new AdRequest.Builder().build());
-
+                final ViewHolderAdMob viewHolderAdMob = (ViewHolderAdMob) holder;
+                requestAd(viewHolderAdMob);
                 break;
-
         }
+    }
+
+    private void requestAd(final ViewHolderAdMob viewHolderAdMob) {
+        long start = System.currentTimeMillis();
+        AdLoader.Builder builder = new AdLoader.Builder(mContext, ADMOB_AD_UNIT_ID);
+        builder.forUnifiedNativeAd(new UnifiedNativeAd.OnUnifiedNativeAdLoadedListener() {
+            @Override
+            public void onUnifiedNativeAdLoaded(UnifiedNativeAd unifiedNativeAd) {
+                populateContentAdView(unifiedNativeAd, viewHolderAdMob.adView);
+            }
+        }).withAdListener(new AdListener() {
+            @Override
+            public void onAdFailedToLoad(int i) {
+                Log.d("zhaoyujie", "   errorCode = " + i);
+            }
+        });
+        final AdLoader loader = builder.build();
+        //TODO  this method make main thread carton at main thread or other thread
+        //Runnable runnable = new Runnable() {
+        //    @Override
+        //    public void run() {
+        //        loader.loadAd(new AdRequest.Builder().build());
+        //    }
+        //};
+        //new Thread(runnable).start();
+        //TODO  this method make main thread carton at main thread or other thread
+        loader.loadAd(new AdRequest.Builder().build());
+        long duration = System.currentTimeMillis() - start;
+        Log.d("zhaoyujie", " request duration = " + duration);
+    }
+
+    private void populateContentAdView(UnifiedNativeAd nativeContentAd, UnifiedNativeAdView adView) {
+        // mVideoStatus.setText("Video status: Ad does not contain a video asset.");
+
+        adView.setHeadlineView(adView.findViewById(R.id.contentad_headline));
+        adView.setBodyView(adView.findViewById(R.id.contentad_body));
+        adView.setCallToActionView(adView.findViewById(R.id.contentad_call_to_action));
+        adView.setAdvertiserView(adView.findViewById(R.id.contentad_advertiser));
+
+        // Some assets are guaranteed to be in every NativeContentAd.
+        ((TextView) adView.getHeadlineView()).setText(nativeContentAd.getHeadline());
+        ((TextView) adView.getBodyView()).setText(nativeContentAd.getBody());
+        ((TextView) adView.getCallToActionView()).setText(nativeContentAd.getCallToAction());
+        ((TextView) adView.getAdvertiserView()).setText(nativeContentAd.getAdvertiser());
+
+        adView.setMediaView((MediaView) adView.findViewById(R.id.mediaView));
+
+        // Assign native ad object to the native view.
+
+        long start = System.currentTimeMillis();
+        //TODO this method takes 40~100 ms
+        adView.setNativeAd(nativeContentAd);
+        long duration = System.currentTimeMillis() - start;
+        Log.d("zhaoyujie", " setNativeAd  duration = " + duration);
     }
 
     @Override
