@@ -16,6 +16,8 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String ADMOB_APP_ID = "ca-app-pub-3940256099942544~3347511713";
+
     public static final String TAG = "Recycle View";
     private Context mContext;
     private List<MyListModel> mList;
@@ -29,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        MobileAds.initialize(this, getResources().getString(R.string.banner_ad_unit_id));
+        MobileAds.initialize(this, ADMOB_APP_ID);
         mContext = this;
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mList = new ArrayList<MyListModel>();

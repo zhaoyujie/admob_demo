@@ -6,16 +6,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.formats.MediaView;
-import com.google.android.gms.ads.formats.NativeAd;
-import com.google.android.gms.ads.formats.NativeContentAd;
-import com.google.android.gms.ads.formats.NativeContentAdView;
 import com.google.android.gms.ads.formats.UnifiedNativeAd;
 import com.google.android.gms.ads.formats.UnifiedNativeAdView;
 
@@ -27,7 +23,6 @@ import java.util.List;
 public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private static final String ADMOB_AD_UNIT_ID = "ca-app-pub-3940256099942544/2247696110";
-    private static final String ADMOB_APP_ID = "ca-app-pub-3940256099942544~3347511713";
 
     private Context mContext;
     private List<MyListModel> mList;
@@ -116,8 +111,8 @@ public class RecyclerViewAdaptor extends RecyclerView.Adapter<RecyclerView.ViewH
         //    }
         //};
         //new Thread(runnable).start();
-        //TODO  this method make main thread carton at main thread or other thread
-        loader.loadAd(new AdRequest.Builder().build());
+
+
         long duration = System.currentTimeMillis() - start;
         Log.d("zhaoyujie", " request duration = " + duration);
     }
